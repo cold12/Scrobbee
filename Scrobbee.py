@@ -3,7 +3,6 @@
 import sys
 import os
 import getopt
-from scrobbee.config import Config
 
 import scrobbee
 
@@ -107,17 +106,29 @@ def main():
         scrobbee.CONFIG_FILE = os.path.join(scrobbee.DATA_DIR, "config.ini")
     
     # Check if datadir exists and create it otherwise
+    if not os.access(scrobbee.DATA_DIR, os.F_OK):
+        try:
+            os.makedirs(scrobbee.DATA_DIR, 0744)
+        except os.error, e:
+            raise SystemExit("Unable to create datadir '" + sickbeard.DATA_DIR + "'")
     
     # Check if the datadir is writeable
+    if not os.access(scrobbee.DATA_DIR, os.W_OK):
+        raise SystemExit("Datadir must be writeable '" + scrobbee.DATA_DIR + "'")
     
     # Check if the config file is writeable
-    
-    # Load config
-    config = Config(scrobbee.CONFIG_FILE, scrobbee.CONFIG_SPEC);
+    if not os.access(scrobbee.CONFIG_FILE, os.W_OK):
+        if os.path.isfile(scrobbee.CONFIG_FILE):
+            raise SystemExit("Config file '" + scrobbee.CONFIG_FILE + "' must be writeable")
+        elif not os.access(os.path.dirname(scrobbee.CONFIG_FILE), os.W_OK):
+            raise SystemExit("Config file dir '" + os.path.dirname(scrobbee.CONFIG_FILE) + "' must be writeable")
     
     # Initialize Scrobbee
+    scrobbee.initialize(consoleLogging)
     
     # Daemonize if necessary
+    if scrobbee.DAEMON:
+        daemonize()
     
     # Initialize the webserver
     
