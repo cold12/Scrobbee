@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 
+import sys
+import os
+import getopt
+from scrobbee.config import Config
+
+import scrobbee
+
 def daemonize():
     """ Fork off as a daemon """
 
     # Make a non-session-leader child process
     try:
-        pid = os.fork() #@UndefinedVariable - only available in UNIX
+        pid = os.fork()
         if pid != 0:
             sys.exit(0)
     except OSError, e:
         raise RuntimeError("1st fork failed: %s [%d]" %
                    (e.strerror, e.errno))
 
-    os.setsid() #@UndefinedVariable - only available in UNIX
+    os.setsid()
 
     # Make sure I can read my own files and shut out others
     prev = os.umask(0)
@@ -20,7 +27,7 @@ def daemonize():
 
     # Make the child a session-leader by detaching from the terminal
     try:
-        pid = os.fork() #@UndefinedVariable - only available in UNIX
+        pid = os.fork()
         if pid != 0:
             sys.exit(0)
     except OSError, e:
@@ -37,12 +44,18 @@ def daemonize():
 
 def main():
     """ Runs Scrobbee """
+    
+    scrobbee.PROG_DIR = os.path.dirname(os.path.abspath(__file__))
+    scrobbee.DATA_DIR = scrobbee.PROG_DIR
+    scrobbee.CONFIG_SPEC = os.path.join(scrobbee.PROG_DIR, "configspec.ini")
+    
     try:
         opts, args = getopt.getopt(sys.argv[1:], "qdp::", ['quiet', 'daemon', 'port=', 'pidfile=', 'config=', 'datadir=']) #@UnusedVariable
     except getopt.GetoptError:
         print "Available options: --quiet, --port, --daemon, --pidfile, --config, --datadir"
         sys.exit()
-    
+
+    """ Set default values """    
     consoleLogging = True
     
     for o, a in opts:
@@ -90,6 +103,8 @@ def main():
                 logger.log(u"Not running in daemon mode. PID file creation disabled.")
                 
     # Set config file if not specified
+    if not scrobbee.CONFIG_FILE:
+        scrobbee.CONFIG_FILE = os.path.join(scrobbee.DATA_DIR, "config.ini")
     
     # Check if datadir exists and create it otherwise
     
@@ -98,6 +113,7 @@ def main():
     # Check if the config file is writeable
     
     # Load config
+    config = Config(scrobbee.CONFIG_FILE, scrobbee.CONFIG_SPEC);
     
     # Initialize Scrobbee
     
@@ -106,6 +122,9 @@ def main():
     # Initialize the webserver
     
     # While loop with actual functionality
+    
+    if consoleLogging:
+        print "Starting Scrobbee"
 
   
 if __name__ == "__main__":
