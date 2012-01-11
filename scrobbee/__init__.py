@@ -4,6 +4,8 @@ from lib.configobj import ConfigObj
 from lib.validate import Validator
 
 """ Variables for startup """
+QUIET = False
+
 DAEMON = False
 CREATEPID = False
 PIDFILE = None

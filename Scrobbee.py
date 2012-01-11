@@ -2,7 +2,7 @@
 
 import sys
 import os
-import getopt
+import getopt, argparse
 
 import scrobbee
 
@@ -48,59 +48,36 @@ def main():
     scrobbee.DATA_DIR = scrobbee.PROG_DIR
     scrobbee.CONFIG_SPEC = os.path.join(scrobbee.PROG_DIR, "configspec.ini")
     
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "qdp::", ['quiet', 'daemon', 'port=', 'pidfile=', 'config=', 'datadir=']) #@UnusedVariable
-    except getopt.GetoptError:
-        print "Available options: --quiet, --port, --daemon, --pidfile, --config, --datadir"
-        sys.exit()
-
-    """ Set default values """    
-    consoleLogging = True
+    parser = argparse.ArgumentParser(description="Scrobble what's playing on the Boxee Box.")
+    parser.add_argument('-q', '--quiet', action='store_true', dest="QUIET", help="disables console output and quiets Scrobbee")
+    parser.add_argument('-p', '--port', dest="PORT", type=int, help="defines the port on which Scrobbee will run")
+    parser.add_argument('-d', '--daemon', dest="DAEMON", help="daemonizes Scrobbee so it keeps running in the background until close explicitly")
+    parser.add_argument('--datadir', dest="DATADIR", type=os.path.abspath, help="determins the location where the Scrobbee data (config file, database, PID file ...) is stored")
+    parser.add_argument('--config', dest="CONFIG_FILE", type=os.path.abspath, help="determines the location of the config file. Can be a filename or a directory. In the latter case, the config file will be named config.ini")
+    parser.add_argument('--pidfile', dest="PIDFILE", type=os.path.abspath, help="determines the location of the PID file")
     
-    for o, a in opts:
-        # for now we'll just silence the logging
-        if o in ('-q', '--quiet'):
-            consoleLogging = False
-
-        # use a different port
-        if o in ('-p', '--port'):
-            forcedPort = int(a)
-
-        # Run as a daemon
-        if o in ('-d', '--daemon'):
-            if sys.platform == 'win32':
-                print "Daemonize not supported under Windows, starting normally"
-            else:
-                consoleLogging = False
-                scrobbee.DAEMON = True
-
-        # config file
-        if o in ('--config',):
-            scrobbee.CONFIG_FILE = os.path.abspath(a)
-
-        # datadir
-        if o in ('--datadir',):
-            scrobbee.DATA_DIR = os.path.abspath(a)
-
-        # write a pidfile if requested
-        if o in ('--pidfile',):
-            scrobbee.PIDFILE = str(a)
-
-            # if the pidfile already exists, sickbeard may still be running, so exit
-            if os.path.exists(scrobbee.PIDFILE):
-                sys.exit("PID file " + scrobbee.PIDFILE + " already exists. Exiting.")
-
-            # a pidfile is only useful in daemon mode
-            # also, test to make sure we can write the file properly
-            if scrobbee.DAEMON:
-                scrobbee.CREATEPID = True
-                try:
-                    file(scrobbee.PIDFILE, 'w').write("pid\n")
-                except IOError, e:
-                    raise SystemExit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
-            else:
-                logger.log(u"Not running in daemon mode. PID file creation disabled.")
-                
+    args = parser.parse_args(namespace=scrobbee)
+    
+    # Check the arguments
+    if (scrobbee.DAEMON and sys.platform == "win32"):
+        print "Daemonize not supported under Windows, starting normally"
+        scrobbee.DAEMON = False
+    else:
+        scrobbee.QUIET = True
+    
+    if not scrobbee.PIDFILE is None:
+        # if the pidfile already exists, sickbeard may still be running, so exit
+        if os.path.exists(scrobbee.PIDFILE):
+            sys.exit("PID file " + scrobbee.PIDFILE + " already exists. Exiting.")
+        if scrobbee.DAEMON:
+            try:
+                file(scrobbee.PIDFILE, 'w').write("pid\n") #Move this together with the other file checking
+            except IOError, e:
+                raise SystemExit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
+        else:
+            scrobbee.PIDFILE = None
+            logger.log(u"Not running in daemon mode. PID file creation disabled.")
+    
     # Set config file if not specified
     if not scrobbee.CONFIG_FILE:
         scrobbee.CONFIG_FILE = os.path.join(scrobbee.DATA_DIR, "config.ini")
@@ -123,8 +100,9 @@ def main():
         elif not os.access(os.path.dirname(scrobbee.CONFIG_FILE), os.W_OK):
             raise SystemExit("Config file dir '" + os.path.dirname(scrobbee.CONFIG_FILE) + "' must be writeable")
     
+    
     # Initialize Scrobbee
-    scrobbee.initialize(consoleLogging)
+    scrobbee.initialize(not scrobbee.QUIET)
     
     # Daemonize if necessary
     if scrobbee.DAEMON:
@@ -134,7 +112,7 @@ def main():
     
     # While loop with actual functionality
     
-    if consoleLogging:
+    if not scrobbee.QUIET:
         print "Starting Scrobbee"
 
   
