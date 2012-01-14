@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-#import lib.boxeeboxclient
-from lib import boxeeboxclient
+import boxeeboxclient
 
 class Boxee():
     client = None

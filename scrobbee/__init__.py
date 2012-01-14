@@ -6,8 +6,8 @@ import cherrypy
 
 from testWeb import Test
 
-from lib.configobj import ConfigObj
-from lib.validate import Validator
+from configobj import ConfigObj
+from validate import Validator
 from scrobbee import boxee
 
 """ Variables for startup """
