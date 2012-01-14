@@ -4,8 +4,11 @@ import sys
 
 import cherrypy
 
+from testWeb import Test
+
 from lib.configobj import ConfigObj
 from lib.validate import Validator
+from scrobbee import boxee
 
 """ Variables for startup """
 QUIET = False
@@ -19,6 +22,8 @@ DATA_DIR = None
 CONFIG_SPEC = None
 CONFIG_FILE = None
 
+PAIRED = False
+
 """ Variables for config """
 
 CONFIG = None
@@ -26,6 +31,8 @@ CONFIG = None
 def initialize(consoleLogging):
     """ Initiate config with configspec """
     global CONFIG
+    
+    client = None
     
     configspec = ConfigObj(CONFIG_SPEC, _inspec=True)
     CONFIG = ConfigObj(CONFIG_FILE, configspec=configspec)
@@ -36,7 +43,21 @@ def initialize(consoleLogging):
         print 'Error in config'
         exit()
         
-    CONFIG.write()    
+    CONFIG.write()
+    
+def start():
+
+    if PAIRED:
+        client = boxee.Boxee("192.168.50.50", 9090)
+        playing = client.getCurrentlyPlaying()
+    
+        print playing
+    
+    app = cherrypy.tree.mount(Test(), '/')
+    
+    cherrypy.server.start()
+    cherrypy.server.wait()
+    
 def sig_handler(signum=None, frame=None):
     if type(signum) != type(None):
         print "Killing cherrypy"
