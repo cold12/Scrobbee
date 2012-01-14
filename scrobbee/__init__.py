@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+import sys
+
+import cherrypy
+
 from lib.configobj import ConfigObj
 from lib.validate import Validator
 
@@ -32,4 +36,15 @@ def initialize(consoleLogging):
         print 'Error in config'
         exit()
         
-    CONFIG.write()
+    CONFIG.write()    
+def sig_handler(signum=None, frame=None):
+    if type(signum) != type(None):
+        print "Killing cherrypy"
+        cherrypy.engine.exit()
+        
+        if CREATEPID:
+            print "Removing pidfile " + str(PIDFILE)
+            os.remove(PIDFILE)
+        
+        print "Exiting MAIN thread"
+        sys.exit()

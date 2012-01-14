@@ -2,9 +2,15 @@
 
 import sys
 import os
-import getopt, argparse
+import argparse
+import signal
+import threading
+import time
 
 import scrobbee
+
+signal.signal(signal.SIGINT, scrobbee.sig_handler)
+signal.signal(signal.SIGTERM, scrobbee.sig_handler)
 
 def daemonize():
     """ Fork off as a daemon """
@@ -47,6 +53,8 @@ def main():
     scrobbee.PROG_DIR = os.path.dirname(os.path.abspath(__file__))
     scrobbee.DATA_DIR = scrobbee.PROG_DIR
     scrobbee.CONFIG_SPEC = os.path.join(scrobbee.PROG_DIR, "configspec.ini")
+    
+    threading.currentThread().name = "MAIN"
     
     parser = argparse.ArgumentParser(description="Scrobble what's playing on the Boxee Box.")
     parser.add_argument('-q', '--quiet', action='store_true', dest="QUIET", help="disables console output and quiets Scrobbee")
@@ -114,6 +122,11 @@ def main():
     
     if not scrobbee.QUIET:
         print "Starting Scrobbee"
+    
+    scrobbee.start()
+    
+    while (True):
+        time.sleep(1)
 
   
 if __name__ == "__main__":
