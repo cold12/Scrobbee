@@ -13,7 +13,7 @@ import socket
 import asyncore
 import sys
 import logging
-import simplejson
+from lib import simplejson
 import urllib
 import urllib2
 
