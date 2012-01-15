@@ -5,14 +5,15 @@
 {% endblock %}
 {% block content %}
     <h1>Pair the Boxee box</h1>
-    <form action="/pair/step2" method="post" id="pair-boxee-form">
+    <div>{{ error }}</div>
+    <form action="/pair/" method="post" id="pair-boxee-form">
         <div>
         <label>IP address</label>
-        <input type="textfield" name="ip" />
+        <input type="textfield" name="ip" value="{{ ip }}" />
         </div>
         <div>
         <label>Port</label>
-        <input type="textfield" name="port" />
+        <input type="textfield" name="port" value="{{ port }}" />
         </div>
         <input type="submit" value="Pair" />
     </form>

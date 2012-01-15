@@ -78,8 +78,6 @@ def start():
             'tools.gzip.mime_types': ['text/html', 'text/plain', 'text/css', 'text/javascript', 'application/javascript']
         },
     }
-
-    from testWeb import Test
     
     app = cherrypy.tree.mount(root = None, config = conf)
     
