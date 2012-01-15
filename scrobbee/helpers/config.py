@@ -20,3 +20,6 @@ class Config():
     
     def getConfig(self):
         return self.config
+    
+    def saveConfig(self):
+        self.config.write()

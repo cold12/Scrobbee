@@ -24,13 +24,15 @@ CONFIG_FILE = None
 
 """ Variables for config """
 
+config = None
 CONFIG = None
 
 def initialize(consoleLogging):
     """ Initiate config with configspec """
-    global CONFIG
+    global CONFIG, config
     
-    CONFIG = Config(CONFIG_FILE, CONFIG_SPEC).getConfig()
+    config = Config(CONFIG_FILE, CONFIG_SPEC)
+    CONFIG = config.getConfig()
     
 def start():
 
@@ -92,6 +94,9 @@ def sig_handler(signum=None, frame=None):
         if CREATEPID:
             print "Removing pidfile " + str(PIDFILE)
             os.remove(PIDFILE)
+        
+        print "Saving config file"
+        config.saveConfig()
         
         print "Exiting MAIN thread"
         sys.exit()
