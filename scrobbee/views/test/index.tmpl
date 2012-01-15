@@ -1,0 +1,14 @@
+{% extends "base.tmpl" %}
+{% block title %}Test{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important { color: #336699; }
+    </style>
+{% endblock %}
+{% block content %}
+    <h1>Test</h1>
+    <p class="important">
+      Welcome on my testpage.
+    </p>
+{% endblock %}

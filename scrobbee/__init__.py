@@ -4,9 +4,9 @@ import sys
 import os
 
 import cherrypy
+import jinja2
 
-from testWeb import Test
-
+from scrobbee.helpers import views
 from scrobbee import boxee
 from scrobbee.helpers.config import Config
 
