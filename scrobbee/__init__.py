@@ -6,7 +6,7 @@ import os
 import cherrypy
 import jinja2
 
-from scrobbee.helpers import views
+from scrobbee.helpers import views, logger
 from scrobbee import boxee
 from scrobbee.helpers.config import Config
 
@@ -27,12 +27,14 @@ CONFIG_FILE = None
 config = None
 CONFIG = None
 
-def initialize(consoleLogging):
+def initialize():    
     """ Initiate config with configspec """
     global CONFIG, config
     
     config = Config(CONFIG_FILE, CONFIG_SPEC)
     CONFIG = config.getConfig()
+    
+    logger.scrobbee_log_instance.initLogging(os.path.join(DATA_DIR, 'logs'), QUIET)
     
 def start():
 
@@ -88,15 +90,15 @@ def start():
     
 def sig_handler(signum=None, frame=None):
     if type(signum) != type(None):
-        print "Killing cherrypy"
+        logger.debug("Killing cherrypy", 'shutdown')
         cherrypy.engine.exit()
         
         if CREATEPID:
-            print "Removing pidfile " + str(PIDFILE)
+            logger.debug("Removing pidfile " + str(PIDFILE))
             os.remove(PIDFILE)
         
-        print "Saving config file"
+        logger.debug("Saving config file")
         config.saveConfig()
         
-        print "Exiting MAIN thread"
+        logger.debug("Exiting MAIN thread")
         sys.exit()

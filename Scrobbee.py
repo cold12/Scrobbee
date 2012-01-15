@@ -11,6 +11,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib'))
 
 import scrobbee
+from scrobbee.helpers import logger
 
 signal.signal(signal.SIGINT, scrobbee.sig_handler)
 signal.signal(signal.SIGTERM, scrobbee.sig_handler)
@@ -70,11 +71,12 @@ def main():
     args = parser.parse_args(namespace=scrobbee)
     
     # Check the arguments
-    if (scrobbee.DAEMON and sys.platform == "win32"):
-        print "Daemonize not supported under Windows, starting normally"
-        scrobbee.DAEMON = False
-    else:
-        scrobbee.QUIET = True
+    if (scrobbee.DAEMON):
+        if (sys.platform == "win32"):
+            print "Daemonize not supported under Windows, starting normally"
+            scrobbee.DAEMON = False
+        else:
+            scrobbee.QUIET = True
     
     if not scrobbee.PIDFILE is None:
         # if the pidfile already exists, sickbeard may still be running, so exit
@@ -113,7 +115,7 @@ def main():
     
     
     # Initialize Scrobbee
-    scrobbee.initialize(not scrobbee.QUIET)
+    scrobbee.initialize()
     
     # Daemonize if necessary
     if scrobbee.DAEMON:
