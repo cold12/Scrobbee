@@ -6,6 +6,7 @@
 {% block content %}
     <h1>Pair the Boxee box - Step 2</h1>
     <div>The TV connected to your Boxee Box will show a challenge. Please type the 4 digits you see on the screen here.</div>
+    <div>{{ error }}</div>
     <form action="/pair/step2" method="post" id="pair-boxee-form">
         <div>
         <label>Pair challenge</label>

@@ -44,7 +44,10 @@ class PairController():
                 return {'challenge': challenge}
             
             boxeeclient = Boxee(self.ip, self.port)
-            boxeeclient.pairResponse(challenge)
+            try:
+                boxeeclient.pairResponse(challenge)
+            except BoxeeClientAPIException:
+                return{'error': 'You probably entered a faulty challenge code. Retry!'}
             
             raise cherrypy.HTTPRedirect('/pair/step3')
         
