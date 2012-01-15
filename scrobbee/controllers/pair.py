@@ -4,6 +4,7 @@ import re
 
 import cherrypy
 from scrobbee.boxee import Boxee
+from boxeeboxclient import BoxeeClientAPIException
 
 ValidIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
 
@@ -25,7 +26,10 @@ class PairController():
             self.port = int(port)
                 
             boxeeclient = Boxee(self.ip, self.port)
-            boxeeclient.pairChallenge()
+            try:
+                boxeeclient.pairChallenge()
+            except BoxeeClientAPIException:
+                return{'error': 'Already paired to this ip?', 'ip': ip, 'port': port}
             
             raise cherrypy.HTTPRedirect('/pair/step2')
             
