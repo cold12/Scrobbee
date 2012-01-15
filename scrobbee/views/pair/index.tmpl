@@ -1,0 +1,19 @@
+{% extends "base.tmpl" %}
+{% block title %}Pair{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Pair the Boxee box</h1>
+    <form action="/pair/step2" method="post" id="pair-boxee-form">
+        <div>
+        <label>IP address</label>
+        <input type="textfield" name="ip" />
+        </div>
+        <div>
+        <label>Port</label>
+        <input type="textfield" name="port" />
+        </div>
+        <input type="submit" value="Pair" />
+    </form>
+{% endblock %}

@@ -65,10 +65,23 @@ def start():
             #'flash': app.flash()
         }
     })
+    
+    from scrobbee.helpers.routes import setup as Routes
+    
+    conf = {
+        '/': {
+            'request.dispatch': Routes(),
+            'tools.sessions.on': True,
+            'tools.sessions.timeout': 240,
+
+            'tools.gzip.on': True,
+            'tools.gzip.mime_types': ['text/html', 'text/plain', 'text/css', 'text/javascript', 'application/javascript']
+        },
+    }
 
     from testWeb import Test
     
-    app = cherrypy.tree.mount(Test(), '/')
+    app = cherrypy.tree.mount(root = None, config = conf)
     
     cherrypy.server.start()
     cherrypy.server.wait()

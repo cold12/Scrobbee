@@ -6,7 +6,9 @@ class Boxee():
     client = None
     
     def __init__(self, ip, port):
-        self.client = boxeeboxclient.BoxeeBoxClient('scrobbee', ip, port, application_id="scrobbee", application_label="Scrobbee")
+        self.application_id = 'scrobbee'
+        self.application_label = 'Scrobbee'
+        self.client = boxeeboxclient.BoxeeBoxClient('scrobbee', ip, port, application_id=self.application_id, application_label=self.application_label)
     
     def getCurrentlyPlaying(self):
         now_playing = {}
@@ -92,3 +94,13 @@ class Boxee():
     
     def showNotification(self, notification):
         self.client.callMethod("GUI.NotificationShow", {"msg": notification}, True)
+    
+    def pairChallenge(self):
+        self.client.callMethod("Device.PairChallenge", {'deviceid': 'scrobbee',
+                                                        'applicationid': self.application_id,
+                                                        'label': self.application_label,
+                                                        'icon': "http://dir.boxee.tv/apps/workbench/images/thumb.png",
+                                                        'type': 'other'})
+    
+    def pairResponse(self, challenge):
+        self.client.callMethod("Device.PairResponse", {'deviceid': 'scrobbee', 'code': challenge})
