@@ -16,6 +16,7 @@ __INITIALIZED__ = False
 
 """ Variables for startup """
 QUIET = False
+NOLAUNCH = False
 
 DAEMON = False
 CREATEPID = False

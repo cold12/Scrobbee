@@ -6,6 +6,7 @@ import argparse
 import signal
 import threading
 import time
+import webbrowser
 
 # Add lib folder to path so we don't need to prepend al imports with lib.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib'))
@@ -62,6 +63,7 @@ def main():
     
     parser = argparse.ArgumentParser(description="Scrobble what's playing on the Boxee Box.")
     parser.add_argument('-q', '--quiet', action='store_true', dest="QUIET", help="disables console output and quiets Scrobbee")
+    parser.add_argument('--nolaunch', action='store_true', dest="NOLAUNCH", help="makes sure the browser doesn't launch on startup")
     parser.add_argument('-p', '--port', dest="PORT", type=int, help="defines the port on which Scrobbee will run")
     parser.add_argument('-d', '--daemon', dest="DAEMON", help="daemonizes Scrobbee so it keeps running in the background until close explicitly")
     parser.add_argument('--datadir', dest="DATADIR", type=os.path.abspath, help="determins the location where the Scrobbee data (config file, database, PID file ...) is stored")
@@ -127,6 +129,17 @@ def main():
         print "Starting Scrobbee"
     
     scrobbee.start()
+    
+    # Start web browser
+    if not scrobbee.NOLAUNCH:
+        browserURL = "http://localhost:8080/"
+        try:
+            webbrowser.open(browserURL, 2, 1)
+        except:
+            try:
+                webbrowser.open(browserURL, 1, 1)
+            except:
+                logger.error(u"Unable to launch a browser", 'Launch')
     
     while (True):
         time.sleep(1)
