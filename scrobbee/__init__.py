@@ -2,13 +2,17 @@
 
 import sys
 import os
+import threading
 
 import cherrypy
 import jinja2
 
-from scrobbee.helpers import views, logger
+from scrobbee.helpers import views, logger, webserver
 from scrobbee import boxee
 from scrobbee.helpers.config import Config
+
+INIT_LOCK = threading.Lock()
+__INITIALIZED__ = False
 
 """ Variables for startup """
 QUIET = False
@@ -27,86 +31,71 @@ CONFIG_FILE = None
 CONFIG = None
 
 def initialize():
-    global CONFIG
     
-    CONFIG = Config(CONFIG_FILE)
-    CONFIG.initConfig(CONFIG_SPEC)
+    with INIT_LOCK:
+        
+        global __INITIALIZED__, CONFIG
     
-    logger.scrobbee_log_instance.initLogging(os.path.join(DATA_DIR, 'logs'), QUIET)
+        if __INITIALIZED__:
+            return False
+    
+        # Initialize the config. Accessible through scrobbee.CONFIG.getConfig()
+        CONFIG = Config(CONFIG_FILE)
+        CONFIG.initConfig(CONFIG_SPEC)
+    
+        # Initialize the logger. Just use import logger and logger.debug/info/...
+        logger.scrobbee_log_instance.initLogging(os.path.join(DATA_DIR, 'logs'), QUIET)
+    
+        #Initialize threads / scheduler
+        
+        __INITIALIZED__ = True
     
 def start():
+    global __INITIALIZED__
+    
+    with INIT_LOCK:
+        
+        if __INITIALIZED__:
 
-    if CONFIG.getConfig()["Boxee"]["paired"]:
-        client = boxee.Boxee("192.168.50.50", 9090)
-        playing = client.getCurrentlyPlaying()
+            # Start the threads.
     
-        logger.debug(str(playing), "Boxee playing")
-    
-    loader = views.JinjaLoader(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'views'))
-    cherrypy.tools.jinja = cherrypy.Tool('before_handler', loader, priority=70)
+            # Start the webserver.
+            webserver.initServer()
 
-    cherrypy.config.update({
-        'global': {
-            #'server.thread_pool': 10,
-            #'server.socket_port': port,
-            #'server.socket_host': ca.get('global', 'host'),
-            #'server.environment': ca.get('global', 'server.environment'),
-            #'engine.autoreload_on': ca.get('global', 'server.environment') == 'development',
+def stopThreads():
+    
+    global __INITIALIZED__
+    
+    with INIT_LOCK:
+        
+        if __INITIALIZED__:
+            
+            logger.log(u'Stopping scrobbee threads', 'Shutdown')
+            
+            # Stop the threads.
+            
+            __INITIALIZED__ = False
 
-            #'basePath': path_base,
-            #'runPath': rundir,
-            #'cachePath': cachedir,
-            #'debug': debug,
-            #'frozen': frozen,
-            #
-            ## Global workers
-            #'config': ca,
-            #'updater': myUpdater,
-            #'cron': myCrons.threads,
-            #'searchers': myCrons.searchers,
-            #'flash': app.flash()
-        }
-    })
+def save():
+    global CONFIG
     
-    # cherrypy setup
-    cherrypy.config.update({
-            #'server.socket_port': options['port'],
-            #'server.socket_host': options['host'],
-            'log.screen':           False,
-            'log.access_file':      os.path.join(DATA_DIR, 'logs', 'cherrypy.log')
-            #'error_page.401':     http_error_401_hander,
-            #'error_page.404':     http_error_404_hander,
-    })
+    logger.debug("Saving config file", 'Shutdown')
+    CONFIG.saveConfig()
     
-    from scrobbee.helpers.routes import setup as Routes
+def shutdown():
+    save()
     
-    conf = {
-        '/': {
-            'request.dispatch': Routes(),
-            'tools.sessions.on': True,
-            'tools.sessions.timeout': 240,
-
-            'tools.gzip.on': True,
-            'tools.gzip.mime_types': ['text/html', 'text/plain', 'text/css', 'text/javascript', 'application/javascript']
-        },
-    }
+    logger.debug("Killing cherrypy", 'Shutdown')
+    cherrypy.engine.exit()
     
-    app = cherrypy.tree.mount(root = None, config = conf)
-    
-    cherrypy.server.start()
-    cherrypy.server.wait()
+    if CREATEPID:
+        logger.debug("Removing pidfile " + str(PIDFILE), 'Shutdown')
+        os.remove(PIDFILE)
+        
+    logger.debug("Exiting MAIN thread", 'Shutdown')
+    sys.exit()
     
 def sig_handler(signum=None, frame=None):
     if type(signum) != type(None):
-        logger.debug("Killing cherrypy", 'shutdown')
-        cherrypy.engine.exit()
-        
-        if CREATEPID:
-            logger.debug("Removing pidfile " + str(PIDFILE))
-            os.remove(PIDFILE)
-        
-        logger.debug("Saving config file")
-        CONFIG.saveConfig()
-        
-        logger.debug("Exiting MAIN thread")
-        sys.exit()
+        logger.info(u"Signal %(signum)i caught, shutting down Scrobbee ..." % {'signum': int(signum)}, 'Shutdown')
+        shutdown()

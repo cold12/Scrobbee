@@ -121,8 +121,6 @@ def main():
     if scrobbee.DAEMON:
         daemonize()
     
-    # Initialize the webserver
-    
     # While loop with actual functionality
     
     if not scrobbee.QUIET:
