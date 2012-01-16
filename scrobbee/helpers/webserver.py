@@ -16,14 +16,18 @@ def initServer(options = {}):
     loader = views.JinjaLoader(os.path.join(options['prog_dir'], 'views'))
     cherrypy.tools.jinja = cherrypy.Tool('before_handler', loader, priority=70)
     
+    # Use a controller for errors (such as 404) to keep the templates cleaner
+    from scrobbee.controllers.error import ErrorController
+    ec = ErrorController(os.path.join(options['prog_dir'], 'views'))
+    
     # cherrypy setup
     cherrypy.config.update({
             #'server.socket_port': options['port'],
             #'server.socket_host': options['host'],
             'log.screen':           False,
-            'log.access_file':      os.path.join(options['data_dir'], 'logs', 'cherrypy.log')
+            'log.access_file':      os.path.join(options['data_dir'], 'logs', 'cherrypy.log'),
             #'error_page.401':     http_error_401_hander,
-            #'error_page.404':     http_error_404_hander,
+            'error_page.404':      ec.error_404,
     })
     
     from scrobbee.helpers.routes import setup as Routes
@@ -44,3 +48,4 @@ def initServer(options = {}):
     logger.info("Starting Cherrpy", 'Startup')
     cherrypy.server.start()
     cherrypy.server.wait()
+    
