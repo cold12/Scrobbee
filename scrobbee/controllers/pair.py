@@ -8,8 +8,6 @@ import scrobbee
 from scrobbee.boxee import Boxee
 from boxeeboxclient import BoxeeClientAPIException
 
-CONFIG = scrobbee.CONFIG
-
 ValidIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
 
 class PairController():
@@ -60,7 +58,9 @@ class PairController():
     @cherrypy.expose
     @cherrypy.tools.jinja(filename = 'pair/step3.tmpl')
     def step3(self):
-        CONFIG["Boxee"]["ip"] = self.ip
-        CONFIG["Boxee"]["port"] = self.port
-        CONFIG["Boxee"]["paired"] = True
+        scrobbee.CONFIG.getConfig()["Boxee"]["ip"] = self.ip
+        scrobbee.CONFIG.getConfig()["Boxee"]["port"] = self.port
+        scrobbee.CONFIG.getConfig()["Boxee"]["paired"] = True
+        scrobbee.CONFIG.saveConfig()
+        
         return {}
