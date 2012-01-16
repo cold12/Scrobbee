@@ -55,22 +55,21 @@ class ScrobbeeLogger():
             scrobbee_logger.error(message)
 
 scrobbee_log_instance = ScrobbeeLogger()
-logger = logging.getLogger('scrobbee')
 
-def log(message, logLevel=logging.INFO):
-    scrobbee_log_instance.log(message, logLevel)
+def log(message, logLevel=logging.INFO, context=''):
+    scrobbee_log_instance.log(message, logLevel, context)
     
 def debug(message, context=''):
     scrobbee_log_instance.log(message, logging.DEBUG, context)
     
-def info(message):
-    scrobbee_log_instance.log(message, logging.INFO)
+def info(message, context=''):
+    scrobbee_log_instance.log(message, logging.INFO, context)
     
-def warning(message):
-    scrobbee_log_instance.log(message, logging.WARNING)
+def warning(message, context=''):
+    scrobbee_log_instance.log(message, logging.WARNING, context)
     
-def error(message):
-    scrobbee_log_instance.log(message, logging.ERROR)
+def error(message, context=''):
+    scrobbee_log_instance.log(message, logging.ERROR, context)
     
 def changeHandlers(logger_name, log_file, quiet = True, enabled = False):
     logger_temp = logging.getLogger(str(logger_name))
