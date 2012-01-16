@@ -24,25 +24,23 @@ CONFIG_FILE = None
 
 """ Variables for config """
 
-config = None
 CONFIG = None
 
-def initialize():    
-    """ Initiate config with configspec """
-    global CONFIG, config
+def initialize():
+    global CONFIG
     
-    config = Config(CONFIG_FILE, CONFIG_SPEC)
-    CONFIG = config.getConfig()
+    CONFIG = Config(CONFIG_FILE)
+    CONFIG.initConfig(CONFIG_SPEC)
     
     logger.scrobbee_log_instance.initLogging(os.path.join(DATA_DIR, 'logs'), QUIET)
     
 def start():
 
-    if CONFIG["Boxee"]["paired"]:
+    if CONFIG.getConfig()["Boxee"]["paired"]:
         client = boxee.Boxee("192.168.50.50", 9090)
         playing = client.getCurrentlyPlaying()
     
-        print playing
+        logger.debug(str(playing), "Boxee playing")
     
     loader = views.JinjaLoader(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'views'))
     cherrypy.tools.jinja = cherrypy.Tool('before_handler', loader, priority=70)
@@ -68,6 +66,16 @@ def start():
             #'searchers': myCrons.searchers,
             #'flash': app.flash()
         }
+    })
+    
+    # cherrypy setup
+    cherrypy.config.update({
+            #'server.socket_port': options['port'],
+            #'server.socket_host': options['host'],
+            'log.screen':           False,
+            'log.access_file':      os.path.join(DATA_DIR, 'logs', 'cherrypy.log')
+            #'error_page.401':     http_error_401_hander,
+            #'error_page.404':     http_error_404_hander,
     })
     
     from scrobbee.helpers.routes import setup as Routes
@@ -98,7 +106,7 @@ def sig_handler(signum=None, frame=None):
             os.remove(PIDFILE)
         
         logger.debug("Saving config file")
-        config.saveConfig()
+        CONFIG.saveConfig()
         
         logger.debug("Exiting MAIN thread")
         sys.exit()
