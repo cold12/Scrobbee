@@ -36,7 +36,8 @@ class BoxeeBoxClient:
         self.log = logging.getLogger("BoxeeBoxPythonClient")
         self.log.setLevel(logging_level)
         self.log.addHandler(log_handler)
-        self.log.debug("Initialized Boxee Box Python Client.")
+        #disabled this call so our logging mechanisms will work as expected. Otherwise this nasty bugger keeps outputting stuff
+        #self.log.debug("Initialized Boxee Box Python Client.")
         self.id = 100
         
     def callMethod(self, method, params=None, auth=None):

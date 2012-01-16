@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import os
+
+import scrobbee
 import boxeeboxclient
 
 class Boxee():
@@ -9,6 +12,10 @@ class Boxee():
         self.application_id = 'scrobbee'
         self.application_label = 'Scrobbee'
         self.client = boxeeboxclient.BoxeeBoxClient('scrobbee', ip, port, application_id=self.application_id, application_label=self.application_label)
+        
+        # Disable the boxeeboxpythonclient logger or redirect it to a separate file in the logs folder
+        from scrobbee.helpers.logger import changeHandlers
+        changeHandlers('BoxeeBoxPythonClient', os.path.join(scrobbee.DATA_DIR, 'logs', 'BoxeeBoxPythonClient.log'), scrobbee.QUIET, False)
     
     def getCurrentlyPlaying(self):
         now_playing = {}

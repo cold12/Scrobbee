@@ -14,6 +14,8 @@ class ScrobbeeLogger():
         self.logger.setLevel(logging.DEBUG)
     
     def initLogging(self, log_path, quiet = False):
+        self.log_path = log_path
+        
         self.logger = logging.getLogger('scrobbee')
         self.logger.setLevel(logging.DEBUG)
         
@@ -69,3 +71,21 @@ def warning(message):
     
 def error(message):
     scrobbee_log_instance.log(message, logging.ERROR)
+    
+def changeHandlers(logger_name, log_file, quiet = True, enabled = False):
+    logger_temp = logging.getLogger(str(logger_name))
+    formatter_temp = logger_temp.__format__
+    
+    for handler in logger_temp.handlers:
+        logger_temp.removeHandler(handler)
+    
+    rotFileHandler = handlers.RotatingFileHandler(log_file, 'a', LOG_SIZE, LOG_NUM_BACKUP)
+    rotFileHandler.setLevel(logging.DEBUG)
+    rotFileHandler.setFormatter(logging.Formatter('%(asctime)s %(levelname)-5s [' + logger_name.rjust(25) + ']  %(message)s', '%b-%d %H:%M:%S'))
+    logger_temp.addHandler(rotFileHandler)
+    
+    if not quiet:
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setLevel(logging.DEBUG)
+        consoleHandler.setFormatter(logging.Formatter('%(asctime)s %(levelname)-5s [' + logger_name.rjust(25) + ']  %(message)s', '%b-%d %H:%M:%S'))
+        logger_temp.addHandler(consoleHandler)
