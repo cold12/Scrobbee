@@ -7,7 +7,7 @@ import threading
 import cherrypy
 import jinja2
 
-from scrobbee.helpers import views, logger, webserver
+from scrobbee.helpers import views, logger, webserver, db
 from scrobbee import boxee
 from scrobbee.helpers.config import Config
 
@@ -46,6 +46,9 @@ def initialize():
     
         # Initialize the logger. Just use import logger and logger.debug/info/...
         logger.scrobbee_log_instance.initLogging(os.path.join(DATA_DIR, 'logs'), QUIET)
+        
+        # Initialize the database
+        db.upgradeDatabase(db.DBConnection())
     
         #Initialize threads / scheduler
         
