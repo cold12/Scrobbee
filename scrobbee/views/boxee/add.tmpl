@@ -6,7 +6,7 @@
 {% block content %}
     <h1>Pair the Boxee box</h1>
     <div>{{ error }}</div>
-    <form action="/pair/" method="post" id="pair-boxee-form">
+    <form action="/boxee/add" method="post" id="pair-boxee-form">
         <div>
         <label>IP address</label>
         <input type="textfield" name="ip" value="{{ ip }}" />

@@ -6,6 +6,7 @@ import cherrypy
 
 import scrobbee
 from scrobbee.boxee import Boxee
+from scrobbee.helpers import db
 from boxeeboxclient import BoxeeClientAPIException
 
 ValidIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
@@ -33,7 +34,7 @@ class BoxeeController():
             except BoxeeClientAPIException:
                 return{'error': 'Already paired to this ip?', 'ip': ip, 'port': port}
             
-            raise cherrypy.HTTPRedirect('/pair/step2')
+            raise cherrypy.HTTPRedirect('/boxee/add/challenge')
             
         return {'ip': ip, 'port': port}
     
@@ -51,16 +52,14 @@ class BoxeeController():
             except BoxeeClientAPIException:
                 return{'error': 'You probably entered a faulty challenge code. Retry!'}
             
-            raise cherrypy.HTTPRedirect('/pair/step3')
+            raise cherrypy.HTTPRedirect('/boxee/add/finish')
         
         return {'challenge': challenge}
     
     @cherrypy.expose
     @cherrypy.tools.jinja(filename = 'boxee/add_finish.tmpl')
     def add_finish(self):
-        scrobbee.CONFIG.getConfig()["Boxee"]["ip"] = self.ip
-        scrobbee.CONFIG.getConfig()["Boxee"]["port"] = self.port
-        scrobbee.CONFIG.getConfig()["Boxee"]["paired"] = True
-        scrobbee.CONFIG.saveConfig()
+        connection = db.DBConnection()
+        connection.action("INSERT INTO boxee_boxes (boxee_name, ip, port) VALUES (?, ?, ?)", ["test", self.ip, self.port])
         
         return {}

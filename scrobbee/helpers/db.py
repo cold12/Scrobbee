@@ -13,6 +13,7 @@ class DBConnection():
     def __init__(self, filename='scrobbee.db'):
         self.filename = filename
         self.connection = sqlite3.connect(os.path.join(scrobbee.DATA_DIR, filename), 20)
+        self.connection.row_factory = sqlite3.Row
     
     def action(self, query, args=None):
         with db_lock:
@@ -35,14 +36,14 @@ class DBConnection():
                     break
                 except sqlite3.OperationalError, e:
                     if "unable to open database file" in e.message or "database is locked" in e.message:
-                        logger.warning("Database error: " + ex(e), 'Database' + self.filename)
+                        logger.warning("Database error: " + e.message, 'Database' + self.filename)
                         attempt += 1
                         time.sleep(1)
                     else:
-                        logger.error("DataBase error: " + ex(e), 'Database' + self.filename)
+                        logger.error("DataBase error: " + e.message, 'Database' + self.filename)
                         raise
                 except sqlite3.DatabaseError, e:
-                    logger.error("Fatal error executing query: " + ex(e), 'Database' + self.filename)
+                    logger.error("Fatal error executing query: " + e.message, 'Database' + self.filename)
                     raise
     
             return sqlResult

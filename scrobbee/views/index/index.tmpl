@@ -10,4 +10,25 @@
     <a href="/settings">Settings</a>
     <br />
     <a href="/log">Log</a>
+    <p></p>
+    {% if not boxee_boxes %}
+    <div>
+        <p>You have not added any boxee boxes yet! <a href="/boxee/add">Add</a> one one ...</p>
+    </div>
+    {% else %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>IP</th>
+            <th>Port</th>
+        </tr>
+    {% for box in boxee_boxes %}
+        <tr>
+            <td>{{ box["boxee_name"] }}</td>
+            <td>{{ box["ip"] }}</td>
+            <td>{{ box["port"] }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+    {% endif %}
 {% endblock %}
